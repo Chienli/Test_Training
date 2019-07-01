@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NSubstitute;
 
 namespace IsolatedByInheritanceAndOverride.Tests
 {
@@ -15,12 +17,28 @@ namespace IsolatedByInheritanceAndOverride.Tests
         [TestMethod()]
         public void Test_SyncBookOrders_3_Orders_Only_2_book_order()
         {
-            //Try to isolate dependency to unit test
-
-            //var target = new OrderService();
-            //target.SyncBookOrders();
-            //verify bookDao.Insert() twice
-            Assert.Fail();
+            //Arrange
+            var bookDao = Substitute.For<IBookDao>();
+            var orderService = Substitute.For<OrderService>(bookDao);
+            orderService.GetOrders().Returns(new List<Order>()
+            {
+                new Order()
+                {
+                    Type = "Book"
+                },
+                new Order()
+                {
+                    Type = "DVD"
+                },
+                new Order()
+                {
+                    Type = "Book"
+                }
+            });
+            //Act
+            orderService.SyncBookOrders();
+            //Assert
+            bookDao.Received(2).Insert(Arg.Any<Order>());
         }
     }
 }
