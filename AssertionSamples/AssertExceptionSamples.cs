@@ -15,6 +15,7 @@ namespace AssertionSamples
         }
 
         [TestMethod]
+        [ExpectedException(typeof(YouShallNotPassException))]
         public void Divide_Zero()
         {
             var calculator = new Calculator();

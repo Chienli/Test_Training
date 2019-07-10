@@ -10,27 +10,66 @@ namespace BaseClassCoupling
         public void calculate_half_year_employee_bonus()
         {
             //if my monthly salary is 1200, working year is 0.5, my bonus should be 600
-            var lessThanOneYearEmployee = new LessThanOneYearEmployee()
+            var lessThanOneYearEmployee = new FakeLessThanOneYearEmployee()
             {
                 Id = 91,
                 //Console.WriteLine("your StartDate should be :{0}", DateTime.Today.AddDays(365/2*-1));
                 Today = new DateTime(2018, 1, 27),
                 StartWorkingDate = new DateTime(2017, 7, 29)
             };
+            lessThanOneYearEmployee.Logger = new TestLogger();
 
             var actual = lessThanOneYearEmployee.GetYearlyBonus();
+
             Assert.AreEqual(600, actual);
+        }
+    }
+
+    public interface ILogger
+    {
+        void Info(string message);
+    }
+
+    internal class TestLogger : ILogger
+    {
+        public void Info(string message)
+        {
+            Console.WriteLine(message);
+        }
+    }
+
+    public class Logger : ILogger
+    {
+        public void Info(string message)
+        {
+            DebugHelper.Info(message);
+        }
+    }
+
+    internal class FakeLessThanOneYearEmployee : LessThanOneYearEmployee
+    {
+        internal override decimal GetMonthlySalary()
+        {
+            return 1200;
         }
     }
 
     public abstract class Employee
     {
+        private ILogger _logger;
+
+        public ILogger Logger
+        {
+            get => _logger ?? new Logger();
+            set => _logger = value;
+        }
+
         public DateTime StartWorkingDate { get; set; }
         public DateTime Today { get; set; }
 
-        protected decimal GetMonthlySalary()
+        internal virtual decimal GetMonthlySalary()
         {
-            DebugHelper.Info($"query monthly salary id:{Id}");
+            Logger.Info("");
             return SalaryRepo.Get(this.Id);
         }
 
@@ -43,15 +82,15 @@ namespace BaseClassCoupling
     {
         public override decimal GetYearlyBonus()
         {
-            DebugHelper.Info("--get yearly bonus--");
+            Logger.Info("--get yearly bonus--");
             var salary = this.GetMonthlySalary();
-            DebugHelper.Info($"id:{Id}, his monthly salary is:{salary}");
+            Logger.Info($"id:{Id}, his monthly salary is:{salary}");
             return Convert.ToDecimal(this.WorkingYear()) * salary;
         }
 
         private double WorkingYear()
         {
-            DebugHelper.Info("--get working year--");
+            Logger.Info("--get working year--");
             var year = (Today - StartWorkingDate).TotalDays / 365;
             return year > 1 ? 1 : Math.Round(year, 2);
         }

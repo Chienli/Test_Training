@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using ExpectedObjects;
 
 namespace AssertionSamples
 {
@@ -13,27 +14,55 @@ namespace AssertionSamples
         public void CompareCustomer()
         {
             var actual = _customerRepo.Get();
-
+            var expected = new Customer()
+            {
+                Id = 2,
+                Age = 18,
+                Birthday = new DateTime(1990, 1, 26)
+            };
             //how to assert customer?
-            Assert.Fail();
+            expected.ToExpectedObject().ShouldEqual(actual);
         }
 
         [TestMethod]
         public void CompareCustomerList()
         {
             var actual = _customerRepo.GetAll();
+            var expected = new List<Customer>
+            {
+                new Customer()
+                {
+                    Id=3,
+                    Age=20,
+                    Birthday = new DateTime(1993,1,2)
+                },
 
+                new Customer()
+                {
+                    Id=4,
+                    Age=21,
+                    Birthday = new DateTime(1993,1,3)
+                },
+            };
             //how to assert customers?
-            Assert.Fail();
+            expected.ToExpectedObject().ShouldEqual(actual);
         }
 
         [TestMethod]
         public void CompareComposedCustomer()
         {
+            var expected = new Customer()
+            {
+                Age = 30,
+                Id = 11,
+                Birthday = new DateTime(1999, 9, 9),
+                Order = new Order { Id = 19, Price = 91 },
+            };
+
             var actual = _customerRepo.GetComposedCustomer();
 
+            expected.ToExpectedObject().ShouldEqual(actual);
             //how to assert composed customer?
-            Assert.Fail();
         }
 
         /// <summary>
@@ -44,14 +73,14 @@ namespace AssertionSamples
         public void PartialCompare_Customer_Birthday_And_Order_Price()
         {
             var actual = _customerRepo.GetComposedCustomer();
-            var expected = new Customer()
+            var expected = new
             {
                 Birthday = new DateTime(1999, 9, 9),
-                Order = new Order { Price = 91 },
+                Order = new { Price = 91 },
             };
 
             //how to assert actual is equal to expected?
-            Assert.Fail();
+            expected.ToExpectedObject().ShouldMatch(actual);
         }
     }
 
